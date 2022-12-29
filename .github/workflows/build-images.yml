@@ -57,20 +57,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to Coding Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: finops-docker.pkg.coding.net
-          username: ${{ secrets.CODING_USERNAME }}
-          password: ${{ secrets.CODING_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - id: build-ldflags
         run: |
           echo "::set-output name=build-ldflags::$(make echoLDFLAGS)"
@@ -87,12 +73,8 @@ jobs:
             LDFLAGS=${{steps.build-ldflags.outputs.build-ldflags}}
             BUILD=CI
           tags: |
-            gocrane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
-            gocrane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
-            ghcr.io/gocrane/crane-scheduler/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
-            ghcr.io/gocrane/crane-scheduler/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
-            finops-docker.pkg.coding.net/gocrane/crane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
-            finops-docker.pkg.coding.net/gocrane/crane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
+            dongjiang1989/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
+            dongjiang1989/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
 
       - name: Build craned and push - pull_request_target
         if: ${{ github.event_name == 'pull_request_target' }}
@@ -106,9 +88,7 @@ jobs:
             LDFLAGS=${{steps.build-ldflags.outputs.build-ldflags}}
             BUILD=CI
           tags: |
-            gocrane/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
-            ghcr.io/gocrane/crane-scheduler/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
-            finops-docker.pkg.coding.net/gocrane/crane/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
+            dongjiang1989/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
 
   build-controller:
     runs-on: ubuntu-latest
@@ -148,20 +128,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to Coding Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: finops-docker.pkg.coding.net
-          username: ${{ secrets.CODING_USERNAME }}
-          password: ${{ secrets.CODING_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - id: build-ldflags
         run: |
           echo "::set-output name=build-ldflags::$(make echoLDFLAGS)"
@@ -178,12 +144,8 @@ jobs:
             LDFLAGS=${{steps.build-ldflags.outputs.build-ldflags}}
             BUILD=CI
           tags: |
-            gocrane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
-            gocrane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
-            ghcr.io/gocrane/crane-scheduler/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
-            ghcr.io/gocrane/crane-scheduler/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
-            finops-docker.pkg.coding.net/gocrane/crane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
-            finops-docker.pkg.coding.net/gocrane/crane/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
+            dongjiang1989/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}-${{steps.git-versions.outputs.git-version}}
+            dongjiang1989/${{steps.build-name-image.outputs.build-name-image}}:${{steps.git-branch.outputs.git-branch}}
 
       - name: Build crane-agent and push - pull_request_target
         if: ${{ github.event_name == 'pull_request_target' }}
@@ -197,9 +159,7 @@ jobs:
             LDFLAGS=${{steps.build-ldflags.outputs.build-ldflags}}
             BUILD=CI
           tags: |
-            gocrane/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
-            ghcr.io/gocrane/crane-scheduler/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
-            finops-docker.pkg.coding.net/gocrane/crane/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
+            dongjiang1989/${{steps.build-name-image.outputs.build-name-image}}:pr-${{github.event.number}}-${{steps.git-versions.outputs.git-version}}
 
   post-comment:
     runs-on: ubuntu-latest
@@ -234,34 +194,12 @@ jobs:
 
             #### Docker Registry
 
-            Overview: https://hub.docker.com/u/gocrane
+            Overview: https://hub.docker.com/u/dongjiang1989
 
             | Image                                         | Pull Command                                              |
             | --------------------------------------------- | --------------------------------------------------------- |
-            | crane-scheduler:${{steps.image-tags.outputs.image-tags}}    | docker pull gocrane/crane-scheduler:${{steps.image-tags.outputs.image-tags}}    |
-            | crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      | docker pull gocrane/crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      |
-
-            ---
-
-            #### Coding Registry
-
-            Overview: https://finops.coding.net/public-artifacts/gocrane/crane/packages
-
-            | Image                                         | Pull Command                                              |
-            | --------------------------------------------- | --------------------------------------------------------- |
-            | crane-scheduler:${{steps.image-tags.outputs.image-tags}}    | docker pull finops-docker.pkg.coding.net/gocrane/crane/crane-scheduler:${{steps.image-tags.outputs.image-tags}}    |
-            | crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      | docker pull finops-docker.pkg.coding.net/gocrane/crane/crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      |
-
-            ---
-
-            #### Ghcr Registry
-
-            Overview: https://github.com/orgs/gocrane/packages?repo_name=crane
-
-            | Image                                         | Pull Command                                              |
-            | --------------------------------------------- | --------------------------------------------------------- |
-            | crane-scheduler:${{steps.image-tags.outputs.image-tags}}    | docker pull ghcr.io/gocrane/crane/crane-scheduler:${{steps.image-tags.outputs.image-tags}}    |
-            | crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      | docker pull ghcr.io/gocrane/crane/crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      |
+            | crane-scheduler:${{steps.image-tags.outputs.image-tags}}    | docker pull dongjiang1989/crane-scheduler:${{steps.image-tags.outputs.image-tags}}    |
+            | crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      | docker pull dongjiang1989/crane-scheduler-controller:${{steps.image-tags.outputs.image-tags}}      |
 
             <!-- Created by actions-cool/maintain-one-comment -->
           body-include: '<!-- Created by actions-cool/maintain-one-comment -->'
