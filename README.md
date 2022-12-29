@@ -1,4 +1,6 @@
 # Crane-scheduler
+[![Go Report Card](https://goreportcard.com/badge/github.com/gocrane/crane-scheduler)](https://goreportcard.com/report/github.com/gocrane/crane-scheduler)
+
 
 ## Overview
 Crane-scheduler is a collection of scheduler plugins based on [scheduler framework](https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/), including:
