@@ -70,7 +70,7 @@ func (o *Options) Flags(flag *pflag.FlagSet) error {
 
 	flag.StringVar(&o.PolicyConfigPath, "policy-config-path", o.PolicyConfigPath, "Path to annotator policy cofig")
 	flag.StringVar(&o.Mode, "mode", o.Mode, "controller mode. default: NODEMETRICS")
-	flag.StringVar(&o.StatisticsPath, "mode", o.StatisticsPath, "controller StatisticsPath. default: /statistics")
+	flag.StringVar(&o.StatisticsPath, "path", o.StatisticsPath, "controller StatisticsPath. default: /statistics")
 	flag.StringVar(&o.StatisticsPort, "port", o.StatisticsPort, "controller Statistics Port. default: 9100")
 	flag.StringVar(&o.PrometheusAddr, "prometheus-address", o.PrometheusAddr, "The address of prometheus, from which we can pull metrics data.")
 	flag.Int32Var(&o.BindingHeapSize, "binding-heap-size", o.BindingHeapSize, "Max size of binding heap size, used to store hot value data.")

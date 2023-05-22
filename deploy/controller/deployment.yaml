@@ -30,7 +30,8 @@ spec:
             - /controller
             - --policy-config-path=/data/policy.yaml
             - --prometheus-address=PROMETHEUS_ADDRESS
-          image: docker.io/gocrane/crane-scheduler-controller:0.0.23 
+            - --mode=2
+          image: docker.io/dongjiang1989/crane-scheduler-controller:main 
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /data
