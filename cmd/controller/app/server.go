@@ -66,6 +66,8 @@ func Run(cc *config.CompletedConfig, stopCh <-chan struct{}) error {
 			cc.KubeInformerFactory.Core().V1().Events(),
 			cc.KubeClient,
 			cc.PromClient,
+			cc.HttpClientPool,
+			cc.AnnotatorConfig,
 			*cc.Policy,
 			cc.AnnotatorConfig.BindingHeapSize,
 		)

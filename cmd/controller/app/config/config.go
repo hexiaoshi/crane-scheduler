@@ -10,6 +10,7 @@ import (
 	policy "github.com/gocrane/crane-scheduler/pkg/plugins/apis/policy"
 
 	annotatorconfig "github.com/gocrane/crane-scheduler/pkg/controller/annotator/config"
+	nodestats "github.com/gocrane/crane-scheduler/pkg/controller/nodestats"
 	prom "github.com/gocrane/crane-scheduler/pkg/controller/prometheus"
 )
 
@@ -23,8 +24,13 @@ type Config struct {
 	KubeInformerFactory informers.SharedInformerFactory
 	// KubeClient is the general kube client.
 	KubeClient clientset.Interface
+	// Mode
+	Mode string
 	// PromClient is used for getting metric data from Prometheus.
 	PromClient prom.PromClient
+	// Node Statistics handler
+	StatisticsPath string
+	HttpClientPool nodestats.Client
 	// Policy is a collection of scheduler policies.
 	Policy *policy.DynamicSchedulerPolicy
 	// EventRecorder is the event sink

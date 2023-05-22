@@ -16,7 +16,7 @@ import (
 
 	policy "github.com/gocrane/crane-scheduler/pkg/plugins/apis/policy"
 
-	prom "github.com/gocrane/crane-scheduler/pkg/controller/prometheus"
+	nodestats "github.com/gocrane/crane-scheduler/pkg/controller/nodestats"
 	utils "github.com/gocrane/crane-scheduler/pkg/utils"
 )
 
@@ -85,7 +85,7 @@ func (n *nodeController) syncNode(key string) (bool, error) {
 		return true, fmt.Errorf("can not find node[%s]: %v", node, err)
 	}
 
-	err = annotateNodeLoad(n.promClient, n.kubeClient, node, metricName)
+	err = n.annotateNodeLoad(node, metricName)
 	if err != nil {
 		return false, fmt.Errorf("can not annotate node[%s]: %v", node.Name, err)
 	}
@@ -98,16 +98,28 @@ func (n *nodeController) syncNode(key string) (bool, error) {
 	return true, nil
 }
 
-func annotateNodeLoad(promClient prom.PromClient, kubeClient clientset.Interface, node *v1.Node, key string) error {
-	value, err := promClient.QueryByNodeIP(key, getNodeInternalIP(node))
-	if err == nil && len(value) > 0 {
-		return patchNodeAnnotation(kubeClient, node, key, value)
+func (n *nodeController) annotateNodeLoad(node *v1.Node, key string) error {
+	if n.promClient != nil {
+		value, err := n.promClient.QueryByNodeIP(key, getNodeInternalIP(node))
+		if err == nil && len(value) > 0 {
+			return patchNodeAnnotation(n.kubeClient, node, key, value)
+		}
+		value, err = n.promClient.QueryByNodeName(key, getNodeName(node))
+		if err == nil && len(value) > 0 {
+			return patchNodeAnnotation(n.kubeClient, node, key, value)
+		}
+		return fmt.Errorf("failed to get data %s{%s=%s}: %v", key, node.Name, value, err)
+	} else {
+		data, err := nodestats.GetNodeStats(n.httpClientPool, getNodeInternalIP(node), n.cfg.StatisticsPort, n.cfg.StatisticsPath)
+		var value float64
+		if err == nil {
+			value, ok := data[key]
+			if ok {
+				return patchNodeAnnotation(n.kubeClient, node, key, strconv.FormatFloat(value, 'f', 1, 64))
+			}
+		}
+		return fmt.Errorf("failed to get data %s{%s=%s}: %v", key, node.Name, strconv.FormatFloat(value, 'f', 1, 64), err)
 	}
-	value, err = promClient.QueryByNodeName(key, getNodeName(node))
-	if err == nil && len(value) > 0 {
-		return patchNodeAnnotation(kubeClient, node, key, value)
-	}
-	return fmt.Errorf("failed to get data %s{%s=%s}: %v", key, node.Name, value, err)
 }
 
 func annotateNodeHotValue(kubeClient clientset.Interface, br *BindingRecords, node *v1.Node, policy policy.DynamicSchedulerPolicy) error {

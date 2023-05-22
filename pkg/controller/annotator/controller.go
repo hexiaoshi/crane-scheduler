@@ -12,9 +12,10 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 
-	policy "github.com/gocrane/crane-scheduler/pkg/plugins/apis/policy"
-
+	"github.com/gocrane/crane-scheduler/pkg/controller/annotator/config"
+	nodestats "github.com/gocrane/crane-scheduler/pkg/controller/nodestats"
 	prom "github.com/gocrane/crane-scheduler/pkg/controller/prometheus"
+	policy "github.com/gocrane/crane-scheduler/pkg/plugins/apis/policy"
 )
 
 // Controller is Controller for node annotator.
@@ -27,8 +28,10 @@ type Controller struct {
 	eventInformerSynced cache.InformerSynced
 	eventLister         corelisters.EventLister
 
-	kubeClient clientset.Interface
-	promClient prom.PromClient
+	kubeClient     clientset.Interface
+	promClient     prom.PromClient
+	httpClientPool nodestats.Client
+	cfg            *config.AnnotatorConfiguration
 
 	policy         policy.DynamicSchedulerPolicy
 	bindingRecords *BindingRecords
@@ -40,6 +43,8 @@ func NewNodeAnnotator(
 	eventInformer coreinformers.EventInformer,
 	kubeClient clientset.Interface,
 	promClient prom.PromClient,
+	httpClientPool nodestats.Client,
+	cfg *config.AnnotatorConfiguration,
 	policy policy.DynamicSchedulerPolicy,
 	bingdingHeapSize int32,
 ) *Controller {
@@ -52,7 +57,9 @@ func NewNodeAnnotator(
 		eventLister:         eventInformer.Lister(),
 		kubeClient:          kubeClient,
 		promClient:          promClient,
+		httpClientPool:      httpClientPool,
 		policy:              policy,
+		cfg:                 cfg,
 		bindingRecords:      NewBindingRecords(bingdingHeapSize, getMaxHotVauleTimeRange(policy.Spec.HotValue)),
 	}
 }

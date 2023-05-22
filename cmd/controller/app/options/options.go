@@ -2,6 +2,7 @@ package options
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -14,6 +15,7 @@ import (
 
 	controllerappconfig "github.com/gocrane/crane-scheduler/cmd/controller/app/config"
 	annotatorconfig "github.com/gocrane/crane-scheduler/pkg/controller/annotator/config"
+	nodestats "github.com/gocrane/crane-scheduler/pkg/controller/nodestats"
 	"github.com/gocrane/crane-scheduler/pkg/controller/prometheus"
 	dynamicscheduler "github.com/gocrane/crane-scheduler/pkg/plugins/dynamic"
 	utils "github.com/gocrane/crane-scheduler/pkg/utils"
@@ -41,6 +43,9 @@ func NewOptions() (*Options, error) {
 			BindingHeapSize:  1024,
 			ConcurrentSyncs:  1,
 			PolicyConfigPath: "/etc/kubernetes/policy.yaml",
+			StatisticsPath:   "/statistics",
+			Mode:             annotatorconfig.NODEMETRICS,
+			StatisticsPort:   "9100",
 		},
 		LeaderElection: &componentbaseconfig.LeaderElectionConfiguration{
 			LeaderElect:       true,
@@ -64,6 +69,9 @@ func (o *Options) Flags(flag *pflag.FlagSet) error {
 	}
 
 	flag.StringVar(&o.PolicyConfigPath, "policy-config-path", o.PolicyConfigPath, "Path to annotator policy cofig")
+	flag.StringVar(&o.Mode, "mode", o.Mode, "controller mode. default: NODEMETRICS")
+	flag.StringVar(&o.StatisticsPath, "mode", o.StatisticsPath, "controller StatisticsPath. default: /statistics")
+	flag.StringVar(&o.StatisticsPort, "port", o.StatisticsPort, "controller Statistics Port. default: 9100")
 	flag.StringVar(&o.PrometheusAddr, "prometheus-address", o.PrometheusAddr, "The address of prometheus, from which we can pull metrics data.")
 	flag.Int32Var(&o.BindingHeapSize, "binding-heap-size", o.BindingHeapSize, "Max size of binding heap size, used to store hot value data.")
 	flag.Int32Var(&o.ConcurrentSyncs, "concurrent-syncs", o.ConcurrentSyncs, "The number of annotator controller workers that are allowed to sync concurrently.")
@@ -123,9 +131,13 @@ func (o *Options) Config() (*controllerappconfig.Config, error) {
 
 	c.LeaderElectionClient = clientset.NewForConfigOrDie(rest.AddUserAgent(kubeconfig, "leader-election"))
 
-	c.PromClient, err = prometheus.NewPromClient(o.PrometheusAddr)
-	if err != nil {
-		return nil, err
+	if c.Mode == annotatorconfig.PROMETHEUS {
+		c.PromClient, err = prometheus.NewPromClient(o.PrometheusAddr)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		c.HttpClientPool = nodestats.NewHttpClient(&http.Client{}, 25, 100)
 	}
 
 	c.KubeInformerFactory = NewInformerFactory(c.KubeClient, 0)
