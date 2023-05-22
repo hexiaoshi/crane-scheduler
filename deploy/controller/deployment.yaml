@@ -29,10 +29,9 @@ spec:
           command:
             - /controller
             - --policy-config-path=/data/policy.yaml
-            - --prometheus-address=PROMETHEUS_ADDRESS
-            - --mode=2
+            - --port=9100
           image: docker.io/dongjiang1989/crane-scheduler-controller:main 
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           volumeMounts:
             - mountPath: /data
               name: dynamic-scheduler-policy

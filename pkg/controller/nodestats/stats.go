@@ -23,10 +23,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 func GetNodeStats(c Client, ip string, port string, path string) (map[string]float64, error) {
-	urlString := "http://" + ip + ":" + "port" + "/" + path
+	urlString := "http://" + ip + ":" + port + "/" + strings.Trim(path, "/")
 	reqURL, err := url.Parse(urlString)
 	if err != nil {
 		return nil, err
