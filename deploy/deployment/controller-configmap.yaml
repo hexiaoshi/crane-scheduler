@@ -27,14 +27,14 @@ data:
       predicate:
         ##cpu usage
         - name: cpu_usage_avg_5m
-          maxLimitPecent: 0.65
+          maxLimitPecent: 65
         - name: cpu_usage_max_avg_1h
-          maxLimitPecent: 0.75
+          maxLimitPecent: 75
         ##memory usage
         - name: mem_usage_avg_5m
-          maxLimitPecent: 0.65
+          maxLimitPecent: 65
         - name: mem_usage_max_avg_1h
-          maxLimitPecent: 0.75
+          maxLimitPecent: 75
 
       priority:
         ###score = sum(() * weight) / len,  0 <= score <= 10
