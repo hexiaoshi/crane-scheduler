@@ -139,7 +139,7 @@ There are two options:
    4) Modify `kube-scheduler.yaml` and replace kube-scheduler image with Crane-scheduler：
    ```yaml
    ...
-    image: docker.io/gocrane/crane-scheduler:0.0.23
+    image: docker.io/dongjiang1989/crane-scheduler:main
    ...
    ```
    1) Install [cheduler-controller](deploy/controller/deployment.yaml):
