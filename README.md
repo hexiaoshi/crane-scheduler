@@ -7,62 +7,54 @@ Crane-scheduler is a collection of scheduler plugins based on [scheduler framewo
 
 - [Dynamic scheduler: a load-aware scheduler plugin](doc/dynamic-scheduler.md)
 ## Get Started
-### 1. Install Prometheus
-Make sure your kubernetes cluster has Prometheus installed. If not, please refer to [Install Prometheus](https://github.com/gocrane/fadvisor/blob/main/README.md#prerequests).
-### 2. Configure Prometheus Rules
-Configure the rules of Prometheus to get expected aggregated data:
+### Install `Node-Metrics`, as node-exporter plus
+Make sure your kubernetes cluster has [Node-Metrics](https://github.com/kubeservice-stack/node-metrics) installed. If not, please refer to [Install Node-Metrics](https://github.com/kubeservice-stack/node-metrics/blob/master/hack/deployment/daemonset.yaml).
+### Deployment `Node-Metrics`
 ```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
+apiVersion: apps/v1
+kind: DaemonSet
 metadata:
-    name: example-record
-    labels:
-        prometheus: k8s
-        role: alert-rules
+  labels:
+    app: node-metrics
+  name: node-metrics
+  namespace: crane-system
 spec:
-    groups:
-    - name: cpu_mem_usage_active
-      interval: 30s
-      rules:
-      - record: cpu_usage_active
-        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[30s])) * 100)
-      - record: mem_usage_active
-        expr: 100*(1-node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes)
-    - name: cpu-usage-5m
-      interval: 5m
-      rules:
-      - record: cpu_usage_max_avg_1h
-        expr: max_over_time(cpu_usage_avg_5m[1h])
-      - record: cpu_usage_max_avg_1d
-        expr: max_over_time(cpu_usage_avg_5m[1d])
-    - name: cpu-usage-1m
-      interval: 1m
-      rules:
-      - record: cpu_usage_avg_5m
-        expr: avg_over_time(cpu_usage_active[5m])
-    - name: mem-usage-5m
-      interval: 5m
-      rules:
-      - record: mem_usage_max_avg_1h
-        expr: max_over_time(mem_usage_avg_5m[1h])
-      - record: mem_usage_max_avg_1d
-        expr: max_over_time(mem_usage_avg_5m[1d])
-    - name: mem-usage-1m
-      interval: 1m
-      rules:
-      - record: mem_usage_avg_5m
-        expr: avg_over_time(mem_usage_active[5m])
+  selector:
+    matchLabels:
+      app: node-metrics
+  template:
+    metadata:
+      labels:
+        app: node-metrics
+    spec:
+      containers:
+      - image: dongjiang1989/node-metrics:latest
+        name: node-metrics
+        args:
+        - --web.listen-address=0.0.0.0:19101
+        resources:
+          limits:
+            cpu: 102m
+            memory: 180Mi
+          requests:
+            cpu: 102m
+            memory: 180Mi
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
 ```
->**⚠️Troubleshooting:** The sampling interval of Prometheus must be less than 30 seconds, otherwise the above rules(such as cpu_usage_active) may not take effect.
 
-### 3. Install Crane-scheduler
+### 3. Install `Scheduler` and `Controller`
 There are two options:
-1) Install Crane-scheduler as a second scheduler:
+1) Install `Scheduler` as a `second` scheduler:
    ```bash
-   helm repo add crane https://gocrane.github.io/helm-charts
-   helm install scheduler -n crane-system --create-namespace --set global.prometheusAddr="REPLACE_ME_WITH_PROMETHEUS_ADDR" crane/scheduler
+   git clone git@github.com:kubeservice-stack/crane-scheduler.git
+   cd crane-scheduler/deploy/deployment/
+   kubectl apply -f .
    ```
-2) Replace native Kube-scheduler with Crane-scheduler:
+2) Replace native Kube-scheduler with `scheduler`:
    1) Backup `/etc/kubernetes/manifests/kube-scheduler.yaml`
    ```bash
    cp /etc/kubernetes/manifests/kube-scheduler.yaml /etc/kubernetes/
@@ -112,14 +104,14 @@ There are two options:
       predicate:
         ##cpu usage
         - name: cpu_usage_avg_5m
-          maxLimitPecent: 0.65
+          maxLimitPecent: 65
         - name: cpu_usage_max_avg_1h
-          maxLimitPecent: 0.75
+          maxLimitPecent: 75
         ##memory usage
         - name: mem_usage_avg_5m
-          maxLimitPecent: 0.65
+          maxLimitPecent: 65
         - name: mem_usage_max_avg_1h
-          maxLimitPecent: 0.75
+          maxLimitPecent: 75
 
       priority:
         ##cpu usage
@@ -149,13 +141,15 @@ There are two options:
     image: docker.io/gocrane/crane-scheduler:0.0.23
    ...
    ```
-   1) Install [crane-scheduler-controller](deploy/controller/deployment.yaml):
+   1) Install [cheduler-controller](deploy/controller/deployment.yaml):
     ```bash
     kubectl apply ./deploy/controller/rbac.yaml && kubectl apply -f ./deploy/controller/deployment.yaml
     ```
 
-### 4. Schedule Pods With Crane-scheduler
-Test Crane-scheduler with following example:
+### 4. Schedule Pods With scheduler
+
+#### 4.1 Test cpu Stress Case
+Test scheduler with following example:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -179,7 +173,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: stress
-        image: docker.io/gocrane/stress:latest
+        image: docker.io/dongjiang1989/stress:latest
         command: ["stress", "-c", "1"]
         resources:
           requests:
@@ -193,20 +187,18 @@ spec:
 
 There will be the following event if the test pod is successfully scheduled:
 ```bash
-Type    Reason     Age   From             Message
-----    ------     ----  ----             -------
-Normal  Scheduled  28s   crane-scheduler  Successfully assigned default/cpu-stress-7669499b57-zmrgb to vm-162-247-ubuntu
+Events:
+  Type    Reason     Age   From             Message
+  ----    ------     ----  ----             -------
+  Normal  Scheduled  91s   crane-scheduler  Successfully assigned default/cpu-stress-5c64f4d6fb-wnmsj to kcs-dongjiang-s-xtl6v
+  Normal  Pulling    91s   kubelet          Pulling image "docker.io/dongjiang1989/stress:latest"
+  Normal  Pulled     5s    kubelet          Successfully pulled image "docker.io/dongjiang1989/stress:latest" in 1m26.001017318s
+  Normal  Created    5s    kubelet          Created container stress
+  Normal  Started    5s    kubelet          Started container stress
 ```
 
 ## Compatibility Matrix
 
-|  Scheduler Image Version       | Supported Kubernetes Version |
-| ------------------------------ | :--------------------------: | 
-|         0.0.23                 |        >=1.22.0              |
-|         0.0.20                 |        >=1.18.0              | 
-
-The default scheudler image version is `0.0.23`, and you can run the following command for quick replacement:
-
 ```bash
- KUBE_EDITOR="sed -i 's/v1beta2/v1beta1/g'" kubectl edit cm scheduler-config -n crane-system && KUBE_EDITOR="sed -i 's/0.0.23/0.0.20/g'" kubectl edit deploy crane-scheduler -n crane-system
+ KUBE_EDITOR="sed -i 's/v1beta2/v1beta1/g'" kubectl edit cm scheduler-config -n crane-system && kubectl edit deploy crane-scheduler -n crane-system
 ```
