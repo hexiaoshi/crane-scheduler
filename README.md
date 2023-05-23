@@ -4,6 +4,7 @@
 
 ## Overview
 Crane-scheduler is a collection of scheduler plugins based on [scheduler framework](https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/), including:
+Crane scheduler Plus is a Kubernetes scheduler which can schedule pod based on actual node load. **Most important is `Independent of Prometheus`**
 
 - [Dynamic scheduler: a load-aware scheduler plugin](doc/dynamic-scheduler.md)
 ## Get Started
