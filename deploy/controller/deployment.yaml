@@ -29,7 +29,7 @@ spec:
           command:
             - /controller
             - --policy-config-path=/data/policy.yaml
-            - --port=9100
+            - --port=19101
           image: docker.io/dongjiang1989/crane-scheduler-controller:main 
           imagePullPolicy: Always
           volumeMounts:
