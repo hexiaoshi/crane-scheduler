@@ -197,7 +197,65 @@ Events:
   Normal  Created    5s    kubelet          Created container stress
   Normal  Started    5s    kubelet          Started container stress
 ```
+#### 4.2 Test Nginx `rolling update` Case
 
+```yaml
+apiVersion: apps/v1                                                                                                                                         
+kind: Deployment
+metadata:
+  name: nginxapp
+  labels:
+    app: nginxapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      schedulerName: crane-scheduler
+      containers:
+      - name: nginx
+        image: nginx:1.11.9-alpine
+        ports:
+        - containerPort: 80
+```
+>**Note:** Change `crane-scheduler` to `default-scheduler` if `crane-scheduler` is used as default.
+
+```bash
+$ kubectl get deployment
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+nginxapp         3/3     3            3           1d
+$ kubectl scale --replicas=30 deployment/nginxapp 
+deployment.apps/nginxapp scaled
+```
+
+There will be the following event if the test pod is successfully scheduled:
+```bash
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Progressing    True    NewReplicaSetAvailable
+  Available      True    MinimumReplicasAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   nginxapp-57bdf45cbf (30/30 replicas created)
+Events:
+  Type    Reason             Age                From                   Message
+  ----    ------             ----               ----                   -------
+  Normal  ScalingReplicaSet  56m                deployment-controller  Scaled up replica set nginxapp-57bdf45cbf to 13
+  Normal  ScalingReplicaSet  56m                deployment-controller  Scaled down replica set nginxapp-664b9459f7 to 39
+  Normal  ScalingReplicaSet  56m                deployment-controller  Scaled up replica set nginxapp-57bdf45cbf to 26
+  Normal  ScalingReplicaSet  51m                deployment-controller  Scaled down replica set nginxapp-664b9459f7 to 3
+  Normal  ScalingReplicaSet  51m                deployment-controller  Scaled down replica set nginxapp-57bdf45cbf to 2
+  Normal  ScalingReplicaSet  47m                deployment-controller  Scaled down replica set nginxapp-664b9459f7 to 1
+  Normal  ScalingReplicaSet  46m (x4 over 47m)  deployment-controller  (combined from similar events): Scaled up replica set nginxapp-57bdf45cbf to 40
+  Normal  ScalingReplicaSet  2m52s              deployment-controller  Scaled up replica set nginxapp-57bdf45cbf to 43
+  Normal  ScalingReplicaSet  94s                deployment-controller  Scaled down replica set nginxapp-57bdf45cbf to 3
+  Normal  ScalingReplicaSet  37s                deployment-controller  Scaled up replica set nginxapp-57bdf45cbf to 30
+```
 ## Compatibility Matrix
 
 ```bash
