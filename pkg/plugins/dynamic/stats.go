@@ -86,7 +86,7 @@ func getScore(anno map[string]string, priorityPolicy policy.PriorityPolicy, sync
 		return 0, err
 	}
 
-	score := (1. - usage) * priorityPolicy.Weight * float64(framework.MaxNodeScore)
+	score := (1. - (usage / 100)) * priorityPolicy.Weight * float64(framework.MaxNodeScore)
 
 	return score, nil
 }
