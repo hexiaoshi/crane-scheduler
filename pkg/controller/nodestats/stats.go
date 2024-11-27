@@ -19,7 +19,7 @@ package nodestats
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -41,7 +41,7 @@ func GetNodeStats(c Client, ip string, port string, path string) (map[string]flo
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New("resp StatusCode is " + strconv.Itoa(resp.StatusCode))
 	}
-	da, err := ioutil.ReadAll(resp.Body)
+	da, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
