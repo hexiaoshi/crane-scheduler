@@ -41,11 +41,7 @@ func inActivePeriod(updatetimeStr string, activeDuration time.Duration) bool {
 
 	now, updatetime := time.Now(), originUpdateTime.Add(activeDuration)
 
-	if now.Before(updatetime) {
-		return true
-	}
-
-	return false
+	return now.Before(updatetime)
 }
 
 func getResourceUsage(anno map[string]string, key string, activeDuration time.Duration) (float64, error) {
