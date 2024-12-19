@@ -120,7 +120,19 @@ func getNodeScore(name string, anno map[string]string, policySpec policy.PolicyS
 	}
 
 	var score, weight float64
-
+	 
+    masterNode := []string{
+				"172.21.1.6",
+				"172.21.1.14",
+				"172.21.1.9",
+				}
+	isMasterNode := false
+	for _, master := range masterNode {
+		if name == master {
+			isMasterNode = true
+			break
+		}
+	}				
 	for _, priorityPolicy := range policySpec.Priority {
 
 		priorityScore, err := getScore(anno, priorityPolicy, policySpec.SyncPeriod)
@@ -131,7 +143,9 @@ func getNodeScore(name string, anno map[string]string, policySpec policy.PolicyS
 		weight += priorityPolicy.Weight
 		score += priorityScore
 	}
-
+	if isMasterNode{
+		score -= 0.5
+	}
 	finnalScore := int(score / weight)
 
 	return finnalScore
