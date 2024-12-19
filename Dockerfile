@@ -27,7 +27,7 @@ RUN go build -ldflags="${LDFLAGS}" -a -o ${PKGNAME} /go/src/github.com/gocrane/c
 
 FROM alpine:latest
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-RUN unset https_proxy HTTPS_PROXY HTTP_PROXY http_proxy && apk add -U tzdata
+RUN  apk add -U tzdata
 
 WORKDIR /
 ARG PKGNAME
