@@ -143,8 +143,8 @@ func getNodeScore(name string, anno map[string]string, policySpec policy.PolicyS
 		weight += priorityPolicy.Weight
 		score += priorityScore
 	}
-	if isMasterNode{
-		score -= 0.5
+	if isMasterNode {
+		score = score - (score * 0.3) 
 	}
 	finnalScore := int(score / weight)
 
