@@ -26,8 +26,9 @@ COPY cmd cmd/
 RUN go build -ldflags="${LDFLAGS}" -a -o ${PKGNAME} /go/src/github.com/gocrane/crane-scheduler/cmd/${PKGNAME}/main.go
 
 FROM alpine:latest
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-RUN  apk add -U tzdata
+
+
+RUN apk add -U tzdata
 
 WORKDIR /
 ARG PKGNAME
